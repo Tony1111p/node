@@ -1,0 +1,662 @@
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Plus, 
+  Trash2, 
+  Edit3, 
+  Eye, 
+  Save, 
+  Upload, 
+  Image as ImageIcon,
+  Type,
+  Layout,
+  Palette,
+  Settings,
+  Globe,
+  Smartphone,
+  Monitor
+} from 'lucide-react';
+
+const WebsiteBuilder = () => {
+  const [elements, setElements] = useState([]);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [websiteSettings, setWebsiteSettings] = useState({
+    title: 'My Real Estate Website',
+    description: 'Professional real estate services',
+    primaryColor: '#3B82F6',
+    secondaryColor: '#1E40AF',
+    fontFamily: 'Inter'
+  });
+  const [deviceView, setDeviceView] = useState('desktop');
+  const fileInputRef = useRef(null);
+
+  const elementTypes = [
+    { type: 'header', icon: Type, label: 'Header' },
+    { type: 'text', icon: Type, label: 'Text Block' },
+    { type: 'image', icon: ImageIcon, label: 'Image' },
+    { type: 'button', icon: Layout, label: 'Button' },
+    { type: 'contact-form', icon: Layout, label: 'Contact Form' },
+    { type: 'property-grid', icon: Layout, label: 'Property Grid' },
+    { type: 'testimonial', icon: Layout, label: 'Testimonial' },
+    { type: 'hero-section', icon: Layout, label: 'Hero Section' }
+  ];
+
+  const addElement = (type) => {
+    const newElement = {
+      id: Date.now(),
+      type,
+      content: getDefaultContent(type),
+      styles: getDefaultStyles(type)
+    };
+    setElements([...elements, newElement]);
+  };
+
+  const getDefaultContent = (type) => {
+    switch (type) {
+      case 'header':
+        return { text: 'Welcome to Our Real Estate Services', level: 'h1' };
+      case 'text':
+        return { text: 'Your trusted partner in real estate. We provide comprehensive services to help you buy, sell, or invest in properties.' };
+      case 'image':
+        return { src: '', alt: 'Real estate image', caption: '' };
+      case 'button':
+        return { text: 'Contact Us', link: '#contact', style: 'primary' };
+      case 'contact-form':
+        return { 
+          title: 'Get In Touch',
+          fields: ['name', 'email', 'phone', 'message'],
+          submitText: 'Send Message'
+        };
+      case 'property-grid':
+        return {
+          title: 'Featured Properties',
+          properties: [
+            { id: 1, title: 'Modern Family Home', price: '$450,000', image: '', bedrooms: 3, bathrooms: 2 },
+            { id: 2, title: 'Downtown Condo', price: '$320,000', image: '', bedrooms: 2, bathrooms: 1 },
+            { id: 3, title: 'Luxury Villa', price: '$850,000', image: '', bedrooms: 4, bathrooms: 3 }
+          ]
+        };
+      case 'testimonial':
+        return {
+          quote: 'TRP Perfect Solutions helped us find our dream home. Their AI-powered approach made the process seamless and efficient.',
+          author: 'Sarah Johnson',
+          role: 'Happy Homeowner'
+        };
+      case 'hero-section':
+        return {
+          title: 'Find Your Perfect Property',
+          subtitle: 'AI-powered real estate solutions for modern living',
+          backgroundImage: '',
+          ctaText: 'Get Started',
+          ctaLink: '#contact'
+        };
+      default:
+        return {};
+    }
+  };
+
+  const getDefaultStyles = (type) => {
+    const baseStyles = {
+      padding: '1rem',
+      margin: '0.5rem 0',
+      backgroundColor: 'transparent',
+      color: '#1F2937',
+      fontSize: '16px',
+      textAlign: 'left'
+    };
+
+    switch (type) {
+      case 'header':
+        return { ...baseStyles, fontSize: '2rem', fontWeight: 'bold', textAlign: 'center' };
+      case 'hero-section':
+        return { 
+          ...baseStyles, 
+          padding: '4rem 2rem', 
+          textAlign: 'center', 
+          backgroundColor: '#F3F4F6',
+          minHeight: '400px'
+        };
+      case 'button':
+        return { 
+          ...baseStyles, 
+          backgroundColor: websiteSettings.primaryColor, 
+          color: 'white', 
+          padding: '0.75rem 1.5rem',
+          borderRadius: '0.5rem',
+          display: 'inline-block',
+          textAlign: 'center'
+        };
+      default:
+        return baseStyles;
+    }
+  };
+
+  const updateElement = (id, updates) => {
+    setElements(elements.map(el => 
+      el.id === id ? { ...el, ...updates } : el
+    ));
+  };
+
+  const deleteElement = (id) => {
+    setElements(elements.filter(el => el.id !== id));
+    setSelectedElement(null);
+  };
+
+  const renderElement = (element) => {
+    const { type, content, styles } = element;
+    const elementStyle = {
+      ...styles,
+      border: selectedElement?.id === element.id ? '2px solid #3B82F6' : '1px solid transparent',
+      cursor: previewMode ? 'default' : 'pointer',
+      position: 'relative'
+    };
+
+    const handleClick = () => {
+      if (!previewMode) {
+        setSelectedElement(element);
+      }
+    };
+
+    switch (type) {
+      case 'header':
+        const HeaderTag = content.level || 'h1';
+        return (
+          <HeaderTag 
+            key={element.id}
+            style={elementStyle} 
+            onClick={handleClick}
+          >
+            {content.text}
+          </HeaderTag>
+        );
+
+      case 'text':
+        return (
+          <p 
+            key={element.id}
+            style={elementStyle} 
+            onClick={handleClick}
+          >
+            {content.text}
+          </p>
+        );
+
+      case 'image':
+        return (
+          <div key={element.id} style={elementStyle} onClick={handleClick}>
+            {content.src ? (
+              <img 
+                src={content.src} 
+                alt={content.alt} 
+                style={{ maxWidth: '100%', height: 'auto' }}
+              />
+            ) : (
+              <div className="bg-gray-200 p-8 text-center rounded">
+                <ImageIcon className="mx-auto mb-2" size={48} />
+                <p>Click to add image</p>
+              </div>
+            )}
+            {content.caption && <p className="text-sm text-gray-600 mt-2">{content.caption}</p>}
+          </div>
+        );
+
+      case 'button':
+        return (
+          <div key={element.id} style={{ ...elementStyle, display: 'inline-block' }} onClick={handleClick}>
+            <button style={styles} className="hover:opacity-90 transition-opacity">
+              {content.text}
+            </button>
+          </div>
+        );
+
+      case 'hero-section':
+        return (
+          <div 
+            key={element.id}
+            style={{
+              ...elementStyle,
+              backgroundImage: content.backgroundImage ? `url(${content.backgroundImage})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }} 
+            onClick={handleClick}
+          >
+            <h1 style={{ fontSize: '3rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+              {content.title}
+            </h1>
+            <p style={{ fontSize: '1.25rem', marginBottom: '2rem', opacity: 0.8 }}>
+              {content.subtitle}
+            </p>
+            <button 
+              style={{
+                backgroundColor: websiteSettings.primaryColor,
+                color: 'white',
+                padding: '1rem 2rem',
+                borderRadius: '0.5rem',
+                fontSize: '1.1rem',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {content.ctaText}
+            </button>
+          </div>
+        );
+
+      case 'contact-form':
+        return (
+          <div key={element.id} style={elementStyle} onClick={handleClick}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>{content.title}</h3>
+            <form className="space-y-4">
+              {content.fields.includes('name') && (
+                <input 
+                  type="text" 
+                  placeholder="Your Name" 
+                  className="w-full p-3 border rounded"
+                  disabled={!previewMode}
+                />
+              )}
+              {content.fields.includes('email') && (
+                <input 
+                  type="email" 
+                  placeholder="Your Email" 
+                  className="w-full p-3 border rounded"
+                  disabled={!previewMode}
+                />
+              )}
+              {content.fields.includes('phone') && (
+                <input 
+                  type="tel" 
+                  placeholder="Your Phone" 
+                  className="w-full p-3 border rounded"
+                  disabled={!previewMode}
+                />
+              )}
+              {content.fields.includes('message') && (
+                <textarea 
+                  placeholder="Your Message" 
+                  rows="4" 
+                  className="w-full p-3 border rounded"
+                  disabled={!previewMode}
+                />
+              )}
+              <button 
+                type="submit" 
+                style={{
+                  backgroundColor: websiteSettings.primaryColor,
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none'
+                }}
+                disabled={!previewMode}
+              >
+                {content.submitText}
+              </button>
+            </form>
+          </div>
+        );
+
+      case 'property-grid':
+        return (
+          <div key={element.id} style={elementStyle} onClick={handleClick}>
+            <h3 style={{ marginBottom: '2rem', fontSize: '1.5rem', textAlign: 'center' }}>
+              {content.title}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {content.properties.map(property => (
+                <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {property.image ? (
+                      <img src={property.image} alt={property.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon size={48} className="text-gray-400" />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-semibold text-lg mb-2">{property.title}</h4>
+                    <p className="text-2xl font-bold text-blue-600 mb-2">{property.price}</p>
+                    <div className="flex gap-4 text-sm text-gray-600">
+                      <span>{property.bedrooms} bed</span>
+                      <span>{property.bathrooms} bath</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'testimonial':
+        return (
+          <div key={element.id} style={elementStyle} onClick={handleClick}>
+            <div className="bg-white p-6 rounded-lg shadow-md text-center">
+              <blockquote className="text-lg italic mb-4">
+                "{content.quote}"
+              </blockquote>
+              <div>
+                <p className="font-semibold">{content.author}</p>
+                <p className="text-gray-600">{content.role}</p>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return <div key={element.id}>Unknown element type</div>;
+    }
+  };
+
+  const getDeviceClass = () => {
+    switch (deviceView) {
+      case 'mobile':
+        return 'max-w-sm mx-auto';
+      case 'tablet':
+        return 'max-w-2xl mx-auto';
+      default:
+        return 'max-w-full';
+    }
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && selectedElement) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateElement(selectedElement.id, {
+          content: { ...selectedElement.content, src: e.target.result }
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Website Builder</h1>
+          <div className="flex items-center gap-4">
+            {/* Device View Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <Button
+                variant={deviceView === 'mobile' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setDeviceView('mobile')}
+              >
+                <Smartphone size={16} />
+              </Button>
+              <Button
+                variant={deviceView === 'tablet' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setDeviceView('tablet')}
+              >
+                <Monitor size={16} />
+              </Button>
+              <Button
+                variant={deviceView === 'desktop' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setDeviceView('desktop')}
+              >
+                <Globe size={16} />
+              </Button>
+            </div>
+            
+            <Button
+              variant={previewMode ? 'default' : 'outline'}
+              onClick={() => setPreviewMode(!previewMode)}
+            >
+              <Eye size={16} className="mr-2" />
+              {previewMode ? 'Edit' : 'Preview'}
+            </Button>
+            
+            <Button>
+              <Save size={16} className="mr-2" />
+              Save Website
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex">
+        {/* Sidebar */}
+        {!previewMode && (
+          <div className="w-80 bg-white border-r h-screen overflow-y-auto">
+            <Tabs defaultValue="elements" className="p-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="elements">Elements</TabsTrigger>
+                <TabsTrigger value="design">Design</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="elements" className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-3">Add Elements</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {elementTypes.map(({ type, icon: Icon, label }) => (
+                      <Button
+                        key={type}
+                        variant="outline"
+                        className="h-auto p-3 flex flex-col items-center gap-2"
+                        onClick={() => addElement(type)}
+                      >
+                        <Icon size={20} />
+                        <span className="text-xs">{label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {selectedElement && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        Element Properties
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteElement(selectedElement.id)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {selectedElement.type === 'header' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium">Text</label>
+                            <Input
+                              value={selectedElement.content.text}
+                              onChange={(e) => updateElement(selectedElement.id, {
+                                content: { ...selectedElement.content, text: e.target.value }
+                              })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Level</label>
+                            <select
+                              className="w-full p-2 border rounded"
+                              value={selectedElement.content.level}
+                              onChange={(e) => updateElement(selectedElement.id, {
+                                content: { ...selectedElement.content, level: e.target.value }
+                              })}
+                            >
+                              <option value="h1">H1</option>
+                              <option value="h2">H2</option>
+                              <option value="h3">H3</option>
+                            </select>
+                          </div>
+                        </>
+                      )}
+
+                      {selectedElement.type === 'text' && (
+                        <div>
+                          <label className="text-sm font-medium">Text</label>
+                          <Textarea
+                            value={selectedElement.content.text}
+                            onChange={(e) => updateElement(selectedElement.id, {
+                              content: { ...selectedElement.content, text: e.target.value }
+                            })}
+                          />
+                        </div>
+                      )}
+
+                      {selectedElement.type === 'image' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium">Image</label>
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <Upload size={16} className="mr-2" />
+                              Upload Image
+                            </Button>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleImageUpload}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Alt Text</label>
+                            <Input
+                              value={selectedElement.content.alt}
+                              onChange={(e) => updateElement(selectedElement.id, {
+                                content: { ...selectedElement.content, alt: e.target.value }
+                              })}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {selectedElement.type === 'button' && (
+                        <>
+                          <div>
+                            <label className="text-sm font-medium">Button Text</label>
+                            <Input
+                              value={selectedElement.content.text}
+                              onChange={(e) => updateElement(selectedElement.id, {
+                                content: { ...selectedElement.content, text: e.target.value }
+                              })}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Link</label>
+                            <Input
+                              value={selectedElement.content.link}
+                              onChange={(e) => updateElement(selectedElement.id, {
+                                content: { ...selectedElement.content, link: e.target.value }
+                              })}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="design" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Website Theme</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Primary Color</label>
+                      <Input
+                        type="color"
+                        value={websiteSettings.primaryColor}
+                        onChange={(e) => setWebsiteSettings({
+                          ...websiteSettings,
+                          primaryColor: e.target.value
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Secondary Color</label>
+                      <Input
+                        type="color"
+                        value={websiteSettings.secondaryColor}
+                        onChange={(e) => setWebsiteSettings({
+                          ...websiteSettings,
+                          secondaryColor: e.target.value
+                        })}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="settings" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Website Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium">Website Title</label>
+                      <Input
+                        value={websiteSettings.title}
+                        onChange={(e) => setWebsiteSettings({
+                          ...websiteSettings,
+                          title: e.target.value
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Description</label>
+                      <Textarea
+                        value={websiteSettings.description}
+                        onChange={(e) => setWebsiteSettings({
+                          ...websiteSettings,
+                          description: e.target.value
+                        })}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+
+        {/* Main Canvas */}
+        <div className="flex-1 p-6">
+          <div className={`bg-white min-h-screen shadow-lg ${getDeviceClass()}`}>
+            <div className="p-6">
+              {elements.length === 0 ? (
+                <div className="text-center py-20">
+                  <Layout size={64} className="mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                    Start Building Your Website
+                  </h3>
+                  <p className="text-gray-500">
+                    Add elements from the sidebar to begin creating your real estate website
+                  </p>
+                </div>
+              ) : (
+                elements.map(renderElement)
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WebsiteBuilder;
+
